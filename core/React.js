@@ -9,6 +9,7 @@ function createTextNode(text) {
 }
 
 function createElement(type, props, ...children) {
+  console.log("hhhh");
   return {
     type,
     props: {
