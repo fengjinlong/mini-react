@@ -29,35 +29,42 @@ function render(el, container) {
       children: [el],
     },
   };
-  // const dom =
-  //   el.type === "TEXT_ELEMENT"
-  //     ? document.createTextNode("")
-  //     : document.createElement(el.type);
-  // Object.keys(el.props).forEach((key) => {
-  //   if (key !== "children") {
-  //     dom[key] = el.props[key];
-  //   }
-  // });
-  // const children = el.props.children || [];
-  // children.forEach((child) => render(child, dom));
-  // container.append(dom);
+  root = nextWorkOfUnit;
 }
+let root = null;
 
 let nextWorkOfUnit = null;
 function workLoop(deadline) {
   console.log("workLoop");
 
   let shouldYield = false;
-  console.log(nextWorkOfUnit);
   while (!shouldYield && nextWorkOfUnit) {
     console.log("workLoop while");
     nextWorkOfUnit = performUnitOfWork(nextWorkOfUnit);
 
     shouldYield = deadline.timeRemaining() < 1;
+
+    if (!nextWorkOfUnit && root) {
+      commitRoot();
+    }
     if (!shouldYield) {
       requestIdleCallback(workLoop);
     }
   }
+}
+
+// 统一提交
+function commitRoot() {
+  commitWork(root.child);
+}
+function commitWork(fiber) {
+  if (!fiber) {
+    return;
+  }
+  let parentDom = fiber.parent.dom;
+  parentDom.append(fiber.dom);
+  commitWork(fiber.child);
+  commitWork(fiber.sibling);
 }
 
 function createDom(type) {
@@ -80,7 +87,7 @@ function performUnitOfWork(work) {
   // 1 DOM
   if (!work.dom) {
     const dom = (work.dom = createDom(work.type));
-    work.parent.dom.append(dom);
+    // work.parent.dom.append(dom);
 
     // 2 props
     updateProps(dom, work.props);
@@ -116,7 +123,7 @@ function performUnitOfWork(work) {
 
 console.log("react-----");
 requestIdleCallback(workLoop);
-
+console.log(root);
 const React = {
   createElement,
   render,
