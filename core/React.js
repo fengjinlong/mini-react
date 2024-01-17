@@ -9,20 +9,21 @@ function createTextNode(text) {
 }
 
 function createElement(type, props, ...children) {
-  console.log("hhhh");
   return {
     type,
     props: {
       ...props,
-      children: children.map((child) =>
-        typeof child === "string" ? createTextNode(child) : child
-      ),
+      children: children.map((child) => {
+        console.log("hhhh", child);
+        const isTextNode =
+          typeof child === "string" || typeof child === "number";
+        return isTextNode ? createTextNode(child) : child;
+      }),
     },
   };
 }
 
 function render(el, container) {
-  console.log("render");
   nextWorkOfUnit = {
     dom: container,
     props: {
@@ -35,8 +36,6 @@ let root = null;
 
 let nextWorkOfUnit = null;
 function workLoop(deadline) {
-  console.log("workLoop");
-
   let shouldYield = false;
   while (!shouldYield && nextWorkOfUnit) {
     console.log("workLoop while");
@@ -61,8 +60,14 @@ function commitWork(fiber) {
   if (!fiber) {
     return;
   }
-  let parentDom = fiber.parent.dom;
-  parentDom.append(fiber.dom);
+  let fiberParent = fiber.parent;
+  while (!fiberParent.dom) {
+    fiberParent = fiberParent.parent;
+  }
+
+  if (fiber.dom) {
+    fiberParent.dom.append(fiber.dom);
+  }
   commitWork(fiber.child);
   commitWork(fiber.sibling);
 }
@@ -73,57 +78,73 @@ function createDom(type) {
     : document.createElement(type);
 }
 function updateProps(dom, props) {
+  console.log("updateProps", props);
   Object.keys(props).forEach((key) => {
     if (key !== "children") {
       dom[key] = props[key];
     }
   });
 }
-/**
- *
- * @param {1111} work 最初是根容器 和 el
- */
-function performUnitOfWork(work) {
-  // 1 DOM
-  if (!work.dom) {
-    const dom = (work.dom = createDom(work.type));
-    // work.parent.dom.append(dom);
-
-    // 2 props
-    updateProps(dom, work.props);
-  }
-  // 3 链表
+function initChildren(fiber, children) {
   let prevChild = null;
-  const children = work.props.children || [];
   children.forEach((child, index) => {
     const newWork = {
       type: child.type,
       child: null,
       sibling: null,
-      parent: work,
+      parent: fiber,
       props: child.props,
       dom: null,
     };
     if (index === 0) {
-      work.child = newWork;
+      fiber.child = newWork;
     } else {
       prevChild.sibling = newWork;
     }
     prevChild = newWork;
   });
+}
+function performUnitOfWork(fiber) {
+  // is function
+  const isFunctionCommponent = typeof fiber.type === "function";
+  // 1 DOM
+  if (!isFunctionCommponent) {
+    if (!fiber.dom) {
+      const dom = (fiber.dom = createDom(fiber.type));
+      // work.parent.dom.append(dom);
+
+      // 2 props
+      updateProps(dom, fiber.props);
+    }
+  } else {
+    // 函数组件
+    // updateFunctionComponent(work);
+  }
+  // 3 链表
+  const children = isFunctionCommponent
+    ? [fiber.type(fiber.props)]
+    : fiber.props.children;
+  initChildren(fiber, children);
+
   // 4 返回下一个任务
-  if (work.child) {
-    return work.child;
+  if (fiber.child) {
+    return fiber.child;
   }
-  if (work.sibling) {
-    return work.sibling;
+  // if (work.sibling) {
+  //   return work.sibling;
+  // }
+  // return work.parent.sibling;
+  let nextFiber = fiber;
+  while (nextFiber) {
+    if (nextFiber.sibling) {
+      return nextFiber.sibling;
+    } else {
+      nextFiber = nextFiber.parent;
+    }
   }
-  return work.parent.sibling;
 }
 
-console.log("react-----");
 requestIdleCallback(workLoop);
-console.log(root);
 const React = {
   createElement,
   render,
