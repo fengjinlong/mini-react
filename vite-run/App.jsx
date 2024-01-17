@@ -8,6 +8,10 @@ import React from "../core/React.js";
 //   "-ye"
 // );
 
-const App = <div id="app">app</div>;
+const App = (
+  <div id="app">
+    <div>app</div>
+  </div>
+);
 
 export default App;
