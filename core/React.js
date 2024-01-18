@@ -38,7 +38,7 @@ let nextWorkOfUnit = null;
 function workLoop(deadline) {
   let shouldYield = false;
   while (!shouldYield && nextWorkOfUnit) {
-    console.log("workLoop while");
+    // console.log("workLoop while");
     nextWorkOfUnit = performUnitOfWork(nextWorkOfUnit);
 
     shouldYield = deadline.timeRemaining() < 1;
@@ -54,6 +54,7 @@ function workLoop(deadline) {
 
 // 统一提交
 function commitRoot() {
+  console.log("commitRoot");
   commitWork(root.child);
 }
 function commitWork(fiber) {
@@ -66,6 +67,7 @@ function commitWork(fiber) {
   }
 
   if (fiber.dom) {
+    console.log("commitWork", fiber.dom);
     fiberParent.dom.append(fiber.dom);
   }
   commitWork(fiber.child);
@@ -78,7 +80,7 @@ function createDom(type) {
     : document.createElement(type);
 }
 function updateProps(dom, props) {
-  console.log("updateProps", props);
+  // console.log("updateProps", props);
   Object.keys(props).forEach((key) => {
     if (key !== "children") {
       dom[key] = props[key];
@@ -104,27 +106,30 @@ function initChildren(fiber, children) {
     prevChild = newWork;
   });
 }
+
+// fc
+function updateFunctionComponent(fiber) {
+  const children = [fiber.type(fiber.props)];
+  initChildren(fiber, children);
+}
+
+// host
+function updateHostComponent(fiber) {
+  if (!fiber.dom) {
+    fiber.dom = createDom(fiber.type);
+  }
+  updateProps(fiber.dom, fiber.props);
+  initChildren(fiber, fiber.props.children);
+}
 function performUnitOfWork(fiber) {
   // is function
   const isFunctionCommponent = typeof fiber.type === "function";
   // 1 DOM
-  if (!isFunctionCommponent) {
-    if (!fiber.dom) {
-      const dom = (fiber.dom = createDom(fiber.type));
-      // work.parent.dom.append(dom);
-
-      // 2 props
-      updateProps(dom, fiber.props);
-    }
+  if (isFunctionCommponent) {
+    updateFunctionComponent(fiber);
   } else {
-    // 函数组件
-    // updateFunctionComponent(work);
+    updateHostComponent(fiber);
   }
-  // 3 链表
-  const children = isFunctionCommponent
-    ? [fiber.type(fiber.props)]
-    : fiber.props.children;
-  initChildren(fiber, children);
 
   // 4 返回下一个任务
   if (fiber.child) {
