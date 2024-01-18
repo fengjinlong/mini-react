@@ -83,7 +83,13 @@ function updateProps(dom, props) {
   // console.log("updateProps", props);
   Object.keys(props).forEach((key) => {
     if (key !== "children") {
-      dom[key] = props[key];
+      // 事件
+      if (key.startsWith("on")) {
+        const eventType = key.toLowerCase().substring(2);
+        dom.addEventListener(eventType, props[key]);
+      } else {
+        dom[key] = props[key];
+      }
     }
   });
 }

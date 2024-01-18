@@ -23,6 +23,13 @@ function App() {
       app
       <Fn num={1000}></Fn>
       <Fn num={2000}></Fn>
+      <button
+        onClick={() => {
+          console.log("click");
+        }}
+      >
+        btn
+      </button>
     </div>
   );
 }
