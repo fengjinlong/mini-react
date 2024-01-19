@@ -14,7 +14,6 @@ function createElement(type, props, ...children) {
     props: {
       ...props,
       children: children.map((child) => {
-        console.log("hhhh", child);
         const isTextNode =
           typeof child === "string" || typeof child === "number";
         return isTextNode ? createTextNode(child) : child;
@@ -24,23 +23,24 @@ function createElement(type, props, ...children) {
 }
 
 function render(el, container) {
-  nextWorkOfUnit = {
+  wipRoot = {
     dom: container,
     props: {
       children: [el],
     },
   };
-  root = nextWorkOfUnit;
+  nextWorkOfUnit = wipRoot;
 }
-let root = null;
+let wipRoot = null;
 let currentRoot = null;
 function update(el, container) {
-  nextWorkOfUnit = {
+  wipRoot = {
     dom: currentRoot.dom,
     props: currentRoot.props,
     alternate: currentRoot,
   };
-  root = nextWorkOfUnit;
+  nextWorkOfUnit = wipRoot;
+  console.log(wipRoot);
 }
 
 let nextWorkOfUnit = null;
@@ -48,12 +48,11 @@ function workLoop(deadline) {
   console.log("workLoop");
   let shouldYield = false;
   while (!shouldYield && nextWorkOfUnit) {
-    // console.log("workLoop while");
     nextWorkOfUnit = performUnitOfWork(nextWorkOfUnit);
 
     shouldYield = deadline.timeRemaining() < 1;
 
-    if (!nextWorkOfUnit && root) {
+    if (!nextWorkOfUnit && wipRoot) {
       commitRoot();
     }
   }
@@ -62,10 +61,9 @@ function workLoop(deadline) {
 
 // 统一提交
 function commitRoot() {
-  console.log("commitRoot");
-  commitWork(root.child);
-  currentRoot = root;
-  root = null;
+  commitWork(wipRoot.child);
+  currentRoot = wipRoot;
+  wipRoot = null;
 }
 function commitWork(fiber) {
   if (!fiber) {
@@ -78,7 +76,6 @@ function commitWork(fiber) {
 
   if (fiber.effectTag === "PLACEMENT") {
     if (fiber.dom) {
-      console.log("commitWork", fiber.dom);
       fiberParent.dom.append(fiber.dom);
     }
   } else if (fiber.effectTag === "UPDATE") {
@@ -132,7 +129,7 @@ function updateProps(dom, nextProps, prevProps = {}) {
     }
   });
 }
-function initChildren(fiber, children) {
+function reconcileChildren(fiber, children) {
   let oldFiber = fiber.alternate?.child;
   let prevChild = null;
   children.forEach((child, index) => {
@@ -175,7 +172,7 @@ function initChildren(fiber, children) {
 // fc
 function updateFunctionComponent(fiber) {
   const children = [fiber.type(fiber.props)];
-  initChildren(fiber, children);
+  reconcileChildren(fiber, children);
 }
 
 // host
@@ -184,7 +181,7 @@ function updateHostComponent(fiber) {
     fiber.dom = createDom(fiber.type);
   }
   updateProps(fiber.dom, fiber.props);
-  initChildren(fiber, fiber.props.children);
+  reconcileChildren(fiber, fiber.props.children);
 }
 function performUnitOfWork(fiber) {
   // is function

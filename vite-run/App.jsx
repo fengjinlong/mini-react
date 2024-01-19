@@ -35,10 +35,18 @@ const Fn = ({ num }) => {
 
 function App() {
   return (
-    <div id="app">
-      {/* <Fn num={1000}></Fn> */}
-      <Fn num={2000}></Fn>
-    </div>
+    // <div id="app">
+    //   <Fn num={2000}></Fn>
+    // </div>
+    <button
+      onClick={() => {
+        count++;
+        React.update();
+        console.log("click");
+      }}
+    >
+      {count}
+    </button>
   );
 }
 
