@@ -33,9 +33,19 @@ function render(el, container) {
   root = nextWorkOfUnit;
 }
 let root = null;
+let currentRoot = null;
+function update(el, container) {
+  nextWorkOfUnit = {
+    dom: currentRoot.dom,
+    props: currentRoot.props,
+    alternate: currentRoot,
+  };
+  root = nextWorkOfUnit;
+}
 
 let nextWorkOfUnit = null;
 function workLoop(deadline) {
+  console.log("workLoop");
   let shouldYield = false;
   while (!shouldYield && nextWorkOfUnit) {
     // console.log("workLoop while");
@@ -46,16 +56,16 @@ function workLoop(deadline) {
     if (!nextWorkOfUnit && root) {
       commitRoot();
     }
-    if (!shouldYield) {
-      requestIdleCallback(workLoop);
-    }
   }
+  requestIdleCallback(workLoop);
 }
 
 // 统一提交
 function commitRoot() {
   console.log("commitRoot");
   commitWork(root.child);
+  currentRoot = root;
+  root = null;
 }
 function commitWork(fiber) {
   if (!fiber) {
@@ -66,10 +76,16 @@ function commitWork(fiber) {
     fiberParent = fiberParent.parent;
   }
 
-  if (fiber.dom) {
-    console.log("commitWork", fiber.dom);
-    fiberParent.dom.append(fiber.dom);
+  if (fiber.effectTag === "PLACEMENT") {
+    if (fiber.dom) {
+      console.log("commitWork", fiber.dom);
+      fiberParent.dom.append(fiber.dom);
+    }
+  } else if (fiber.effectTag === "UPDATE") {
+    console.log("UPDATE");
+    updateProps(fiber.dom, fiber.props, fiber.alternate?.props);
   }
+
   commitWork(fiber.child);
   commitWork(fiber.sibling);
 }
@@ -79,31 +95,74 @@ function createDom(type) {
     ? document.createTextNode("")
     : document.createElement(type);
 }
-function updateProps(dom, props) {
-  // console.log("updateProps", props);
-  Object.keys(props).forEach((key) => {
+function updateProps(dom, nextProps, prevProps = {}) {
+  // Object.keys(nextProps).forEach((key) => {
+  //   if (key !== "children") {
+  //     // 事件
+  //     if (key.startsWith("on")) {
+  //       const eventType = key.toLowerCase().substring(2);
+  //       dom.addEventListener(eventType, nextProps[key]);
+  //     } else {
+  //       dom[key] = nextProps[key];
+  //     }
+  //   }
+  // });
+  // 1 old 有 new 没有
+  Object.keys(prevProps)
+    .filter((key) => key !== "children")
+    .forEach((key) => {
+      if (!(key in nextProps)) {
+        // dom[key] = "";
+        dom.removeAttribute(key);
+      }
+    });
+  // 2 new 有 old 没有 .filter((key) => key !== "children")
+  Object.keys(nextProps).forEach((key) => {
     if (key !== "children") {
-      // 事件
-      if (key.startsWith("on")) {
-        const eventType = key.toLowerCase().substring(2);
-        dom.addEventListener(eventType, props[key]);
-      } else {
-        dom[key] = props[key];
+      if (prevProps[key] !== nextProps[key]) {
+        if (key.startsWith("on")) {
+          const eventType = key.toLowerCase().substring(2);
+
+          dom.removeEventListener(eventType, prevProps[key]);
+          dom.addEventListener(eventType, nextProps[key]);
+        } else {
+          dom[key] = nextProps[key];
+        }
       }
     }
   });
 }
 function initChildren(fiber, children) {
+  let oldFiber = fiber.alternate?.child;
   let prevChild = null;
   children.forEach((child, index) => {
-    const newWork = {
-      type: child.type,
-      child: null,
-      sibling: null,
-      parent: fiber,
-      props: child.props,
-      dom: null,
-    };
+    const isSameType = oldFiber && child.type === oldFiber.type;
+    let newWork = null;
+    if (isSameType) {
+      newWork = {
+        type: child.type,
+        child: null,
+        sibling: null,
+        parent: fiber,
+        props: child.props,
+        dom: oldFiber.dom,
+        effectTag: "UPDATE",
+        alternate: oldFiber,
+      };
+    } else {
+      newWork = {
+        type: child.type,
+        child: null,
+        sibling: null,
+        parent: fiber,
+        props: child.props,
+        dom: null,
+        effectTag: "PLACEMENT",
+      };
+    }
+    if (oldFiber) {
+      oldFiber = oldFiber.sibling;
+    }
     if (index === 0) {
       fiber.child = newWork;
     } else {
@@ -159,5 +218,6 @@ requestIdleCallback(workLoop);
 const React = {
   createElement,
   render,
+  update,
 };
 export default React;

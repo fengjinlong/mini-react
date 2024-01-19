@@ -7,8 +7,24 @@ import React from "../core/React.js";
 //   "app",
 //   "-ye"
 // );
+
+let count = 10;
+
+let pro = { id: 111 };
 const Fn = ({ num }) => {
-  return <p>{num}</p>;
+  return (
+    <button
+      {...pro}
+      onClick={() => {
+        count++;
+        pro = {};
+        React.update();
+        console.log("click");
+      }}
+    >
+      {count}
+    </button>
+  );
 };
 
 // const App = (
@@ -20,16 +36,8 @@ const Fn = ({ num }) => {
 function App() {
   return (
     <div id="app">
-      app
-      <Fn num={1000}></Fn>
+      {/* <Fn num={1000}></Fn> */}
       <Fn num={2000}></Fn>
-      <button
-        onClick={() => {
-          console.log("click");
-        }}
-      >
-        btn
-      </button>
     </div>
   );
 }
