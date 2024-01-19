@@ -33,6 +33,8 @@ function render(el, container) {
 }
 let wipRoot = null;
 let currentRoot = null;
+let deletions = [];
+
 function update(el, container) {
   wipRoot = {
     dom: currentRoot.dom,
@@ -61,10 +63,24 @@ function workLoop(deadline) {
 
 // 统一提交
 function commitRoot() {
+  deletions.forEach(commitDeletion);
   commitWork(wipRoot.child);
   currentRoot = wipRoot;
   wipRoot = null;
 }
+
+const commitDeletion = (fiber) => {
+  if (fiber.dom) {
+    let fiberParent = fiber.parent;
+    while (!fiberParent.dom) {
+      fiberParent = fiberParent.parent;
+    }
+    fiber.parent.dom.removeChild(fiber.dom);
+  } else {
+    commitDeletion(fiber.child);
+  }
+};
+
 function commitWork(fiber) {
   if (!fiber) {
     return;
@@ -158,7 +174,8 @@ function reconcileChildren(fiber, children) {
       };
     }
     if (oldFiber) {
-      oldFiber = oldFiber.sibling;
+      deletions.push(oldFiber);
+      // oldFiber = oldFiber.sibling;
     }
     if (index === 0) {
       fiber.child = newWork;
