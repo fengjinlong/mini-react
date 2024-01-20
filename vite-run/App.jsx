@@ -1,12 +1,4 @@
 import React from "../core/React.js";
-// const App = React.createElement(
-//   "div",
-//   {
-//     id: "app",
-//   },
-//   "app",
-//   "-ye"
-// );
 
 let count = 10;
 
@@ -27,17 +19,8 @@ const Fn = ({ num }) => {
   );
 };
 
-// const App = (
-//   <p id="app">
-//     app<Fn></Fn>
-//   </p>
-// );
-
-function App() {
+function App2() {
   return (
-    // <div id="app">
-    //   <Fn num={2000}></Fn>
-    // </div>
     <button
       onClick={() => {
         count++;
@@ -49,5 +32,7 @@ function App() {
     </button>
   );
 }
+
+const App = <div>1</div>;
 
 export default App;

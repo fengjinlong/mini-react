@@ -173,10 +173,7 @@ function reconcileChildren(fiber, children) {
         effectTag: "PLACEMENT",
       };
     }
-    if (oldFiber) {
-      deletions.push(oldFiber);
-      // oldFiber = oldFiber.sibling;
-    }
+
     if (index === 0) {
       fiber.child = newWork;
     } else {
@@ -184,6 +181,10 @@ function reconcileChildren(fiber, children) {
     }
     prevChild = newWork;
   });
+  if (oldFiber) {
+    deletions.push(oldFiber);
+    // oldFiber = oldFiber.sibling;
+  }
 }
 
 // fc
