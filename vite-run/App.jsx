@@ -1,8 +1,8 @@
 import React from "../core/React.js";
 
-let count = 10;
+let count = 101;
 
-let pro = { id: 111 };
+let pro = { id: "ccc", class: "ddd" };
 const Fn = ({ num }) => {
   return (
     <button
@@ -19,11 +19,13 @@ const Fn = ({ num }) => {
   );
 };
 
-function App2() {
+function App() {
   return (
     <button
+      {...pro}
       onClick={() => {
         count++;
+        pro = {};
         React.update();
         console.log("click");
       }}
@@ -33,6 +35,6 @@ function App2() {
   );
 }
 
-const App = <div>1</div>;
+const App2 = <div>1</div>;
 
 export default App;
