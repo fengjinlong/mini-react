@@ -47,20 +47,6 @@ function update() {
 }
 
 let nextWorkOfUnit = null;
-// function workLoop(deadline) {
-//   console.log("workLoop");
-//   let shouldYield = false;
-//   while (!shouldYield && nextWorkOfUnit) {
-//     nextWorkOfUnit = performUnitOfWork(nextWorkOfUnit);
-
-//     shouldYield = deadline.timeRemaining() < 1;
-
-//     if (!nextWorkOfUnit && wipRoot) {
-//       commitRoot();
-//     }
-//   }
-//   requestIdleCallback(workLoop);
-// }
 function workLoop(deadline) {
   let shouldYield = false;
   while (!shouldYield && nextWorkOfUnit) {
@@ -209,6 +195,7 @@ function updateFunctionComponent(fiber) {
 
 // // host
 function updateHostComponent(fiber) {
+  const flag = !fiber.dom;
   if (!fiber.dom) {
     fiber.dom = createDom(fiber.type);
     updateProps(fiber.dom, fiber.props, fiber.alternate?.props);
@@ -216,28 +203,6 @@ function updateHostComponent(fiber) {
 
   reconcileChildren(fiber, fiber.props.children);
 }
-// function performUnitOfWork(fiber) {
-//   // is function
-//   const isFunctionCommponent = typeof fiber.type === "function";
-//   // 1 DOM
-//   if (isFunctionCommponent) {
-//     updateFunctionComponent(fiber);
-//   } else {
-//     updateHostComponent(fiber);
-//   }
-//   // 4 返回下一个任务
-//   if (fiber.child) {
-//     return fiber.child;
-//   }
-//   let nextFiber = fiber;
-//   while (nextFiber) {
-//     if (nextFiber.sibling) {
-//       return nextFiber.sibling;
-//     } else {
-//       nextFiber = nextFiber.parent;
-//     }
-//   }
-// }
 function performUnitOfWork(fiber) {
   const isFunctionComponent = typeof fiber.type === "function";
 
