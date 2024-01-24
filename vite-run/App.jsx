@@ -1,40 +1,73 @@
 import React from "../core/React.js";
 
-let count = 101;
+let showBar = false;
 
-let pro = { id: "ccc", class: "ddd" };
-const Fn = ({ num }) => {
-  return (
-    <button
-      {...pro}
-      onClick={() => {
-        count++;
-        pro = {};
-        React.update();
-        console.log("click");
-      }}
-    >
-      {count}
-    </button>
-  );
-};
+// function Counter() {
+//   // const foo = <div>foo</div>;
+//   function Fun() {
+//     return <div>foo</div>;
+//   }
+//   const bar = <div>bar</div>;
+//   function handleShowBar() {
+//     showBar = !showBar;
+//     React.update();
+//   }
+//   return (
+//     <div>
+//       Counter
+//       {/* <div>{showBar ? bar : foo}</div> */}
+//       <div>{showBar ? bar : <Fun />}</div>
+//       <button onClick={handleShowBar}>btn</button>
+//     </div>
+//   );
+// }
 
-function App() {
+// 新的比老的短
+// function Counter() {
+//   const foo = (
+//     <div>
+//       foo
+//       <div>
+//         child
+//         <p>123</p>
+//       </div>
+//     </div>
+//   );
+//   const bar = <div>bar</div>;
+//   function handleShowBar() {
+//     showBar = !showBar;
+//     React.update();
+//   }
+//   return (
+//     <div>
+//       Counter
+//       <div>{showBar ? bar : foo}</div>
+//       <button onClick={handleShowBar}>btn</button>
+//     </div>
+//   );
+// }
+
+// case
+function Counter() {
+  const bar = <div>bar</div>;
+  function handleShowBar() {
+    showBar = !showBar;
+    React.update();
+  }
   return (
-    <button
-      {...pro}
-      onClick={() => {
-        count++;
-        pro = {};
-        React.update();
-        console.log("click");
-      }}
-    >
-      {count}
-    </button>
+    <div>
+      Counter
+      <div>{showBar && bar}</div>
+      <button onClick={handleShowBar}>btn</button>
+    </div>
   );
 }
-
-const App2 = <div>1</div>;
+function App() {
+  return (
+    <div>
+      <Counter />
+    </div>
+  );
+}
 
 export default App;
