@@ -36,14 +36,24 @@ let wipRoot = null;
 let currentRoot = null;
 let deletions = [];
 
-function update() {
-  wipRoot = {
-    dom: currentRoot.dom,
-    props: currentRoot.props,
-    alternate: currentRoot,
-  };
+let wipFiber;
 
-  nextWorkOfUnit = wipRoot;
+function update() {
+  let currentFiber = wipFiber;
+  return () => {
+    console.log(currentFiber);
+    wipRoot = {
+      ...currentFiber,
+      alternate: currentFiber,
+    };
+    // wipRoot = {
+    //   dom: currentRoot.dom,
+    //   props: currentRoot.props,
+    //   alternate: currentRoot,
+    // };
+
+    nextWorkOfUnit = wipRoot;
+  };
 }
 
 let nextWorkOfUnit = null;
@@ -52,6 +62,9 @@ function workLoop(deadline) {
   while (!shouldYield && nextWorkOfUnit) {
     nextWorkOfUnit = performUnitOfWork(nextWorkOfUnit);
 
+    if (wipRoot?.sibling?.type === nextWorkOfUnit?.type) {
+      nextWorkOfUnit = undefined;
+    }
     shouldYield = deadline.timeRemaining() < 1;
   }
 
@@ -198,6 +211,7 @@ function reconcileChildren(fiber, children) {
 
 // fc
 function updateFunctionComponent(fiber) {
+  wipFiber = fiber;
   const children = [fiber.type(fiber.props)];
   reconcileChildren(fiber, children);
 }
