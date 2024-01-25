@@ -5,7 +5,7 @@ function Foo() {
   const [bar, setBar] = React.useState(20);
   function handleClick() {
     setCount((c) => c + 1);
-    setBar((b) => b + 1);
+    setBar(100);
   }
 
   return (
