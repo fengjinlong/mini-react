@@ -2,7 +2,7 @@ import React from "../core/React.js";
 
 let countFoo = 1;
 function Foo() {
-  console.log("foo rerun");
+  console.log("foo return");
   const update = React.update();
   function handleClick() {
     countFoo++;
@@ -11,16 +11,14 @@ function Foo() {
 
   return (
     <div>
-      <h1>foo</h1>
-      {countFoo}
-      <button onClick={handleClick}>click</button>
+      <button onClick={handleClick}>foo click {countFoo}</button>
     </div>
   );
 }
 
 let countBar = 1;
 function Bar() {
-  console.log("bar rerun");
+  console.log("bar return");
   const update = React.update();
   function handleClick() {
     countBar++;
@@ -29,27 +27,14 @@ function Bar() {
 
   return (
     <div>
-      <h1>bar</h1>
-      {countBar}
-      <button onClick={handleClick}>click</button>
+      <button onClick={handleClick}>bar click {countBar}</button>
     </div>
   );
 }
 
-let countRoot = 1;
 function App() {
-  console.log("app rerun");
-
-  const update = React.update();
-  function handleClick() {
-    countRoot++;
-    update();
-  }
-
   return (
     <div>
-      hi-mini-react count: {countRoot}
-      <button onClick={handleClick}>click</button>
       <Foo></Foo>
       <Bar></Bar>
     </div>

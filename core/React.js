@@ -46,12 +46,6 @@ function update() {
       ...currentFiber,
       alternate: currentFiber,
     };
-    // wipRoot = {
-    //   dom: currentRoot.dom,
-    //   props: currentRoot.props,
-    //   alternate: currentRoot,
-    // };
-
     nextWorkOfUnit = wipRoot;
   };
 }
