@@ -1,33 +1,18 @@
 import React from "../core/React.js";
 
-let countFoo = 1;
 function Foo() {
-  console.log("foo return");
-  const update = React.update();
+  const [count, setCount] = React.useState(10);
+  const [bar, setBar] = React.useState(20);
   function handleClick() {
-    countFoo++;
-    update();
+    setCount((c) => c + 1);
+    setBar((b) => b + 1);
   }
 
   return (
     <div>
-      <button onClick={handleClick}>foo click {countFoo}</button>
-    </div>
-  );
-}
-
-let countBar = 1;
-function Bar() {
-  console.log("bar return");
-  const update = React.update();
-  function handleClick() {
-    countBar++;
-    update();
-  }
-
-  return (
-    <div>
-      <button onClick={handleClick}>bar click {countBar}</button>
+      {count}
+      <p>{bar}</p>
+      <button onClick={handleClick}>foo click {count}</button>
     </div>
   );
 }
@@ -36,7 +21,6 @@ function App() {
   return (
     <div>
       <Foo></Foo>
-      <Bar></Bar>
     </div>
   );
 }

@@ -50,6 +50,28 @@ function update() {
   };
 }
 
+let stateHooks;
+let stateHookIndex;
+function useState(initial) {
+  let currentFiber = wipFiber;
+  const oldHook = currentFiber.alternate?.stateHooks[stateHookIndex++];
+  const stateHook = {
+    state: oldHook ? oldHook.state : initial,
+  };
+  stateHooks.push(stateHook);
+
+  currentFiber.stateHooks = stateHooks;
+  function setState(action) {
+    stateHook.state = action(stateHook.state);
+    wipRoot = {
+      ...currentFiber,
+      alternate: currentFiber,
+    };
+    nextWorkOfUnit = wipRoot;
+  }
+  return [stateHook.state, setState];
+}
+
 let nextWorkOfUnit = null;
 function workLoop(deadline) {
   let shouldYield = false;
@@ -206,6 +228,8 @@ function reconcileChildren(fiber, children) {
 // fc
 function updateFunctionComponent(fiber) {
   wipFiber = fiber;
+  stateHookIndex = 0;
+  stateHooks = [];
   const children = [fiber.type(fiber.props)];
   reconcileChildren(fiber, children);
 }
@@ -244,6 +268,7 @@ requestIdleCallback(workLoop);
 const React = {
   createElement,
   render,
+  useState,
   update,
 };
 export default React;
