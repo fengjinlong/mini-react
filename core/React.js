@@ -52,36 +52,37 @@ function update() {
 
 let stateHooks;
 let stateHookIndex;
+
 function useState(initial) {
   let currentFiber = wipFiber;
-  const oldHook = currentFiber.alternate?.stateHooks[stateHookIndex++];
+
+  const oldHook = currentFiber.alternate?.stateHooks[stateHookIndex];
   const stateHook = {
     state: oldHook ? oldHook.state : initial,
     queue: oldHook ? oldHook.queue : [],
   };
-
   stateHook.queue.forEach((action) => {
     stateHook.state = action(stateHook.state);
   });
   stateHook.queue = [];
-  stateHooks.push(stateHook);
 
+  stateHooks.push(stateHook);
   currentFiber.stateHooks = stateHooks;
+  stateHookIndex = stateHookIndex + 1;
+
   function setState(action) {
-    const eagerState =
-      typeof action === "function" ? action(stateHook.state) : action;
-    // 非不要更新
-    if (eagerState === stateHook.state) {
-      return;
-    }
+    // stateHook.state = action(stateHook.state);
 
     stateHook.queue.push(typeof action === "function" ? action : () => action);
+    // 赋值 nextWorkOfUnit，进行 performUnitOfWork 逻辑
     wipRoot = {
       ...currentFiber,
       alternate: currentFiber,
     };
+
     nextWorkOfUnit = wipRoot;
   }
+
   return [stateHook.state, setState];
 }
 

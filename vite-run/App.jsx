@@ -5,14 +5,14 @@ function Foo() {
   const [bar, setBar] = React.useState(20);
   function handleClick() {
     setCount((c) => c + 1);
-    setBar(100);
+    setBar((c) => c + 10);
   }
 
   return (
     <div>
       {count}
       <p>{bar}</p>
-      <button onClick={handleClick}>foo click {count}</button>
+      <button onClick={handleClick}>foo click </button>
     </div>
   );
 }
